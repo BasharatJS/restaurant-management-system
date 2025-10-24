@@ -1,0 +1,103 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function getUserData() {
+      return get(/databases/$(database)/documents/restaurants/$(restaurantId)/users/$(request.auth.uid)).data;
+    }
+
+    function getUserRole(restaurantId) {
+      return getUserData().role;
+    }
+
+    function isAdmin(restaurantId) {
+      return isSignedIn() && getUserRole(restaurantId) == 'admin';
+    }
+
+    function isWaiter(restaurantId) {
+      return isSignedIn() && getUserRole(restaurantId) == 'waiter';
+    }
+
+    function isKitchen(restaurantId) {
+      return isSignedIn() && getUserRole(restaurantId) == 'kitchen';
+    }
+
+    function hasAnyRole(restaurantId) {
+      return isSignedIn() && (isAdmin(restaurantId) || isWaiter(restaurantId) || isKitchen(restaurantId));
+    }
+
+    // Restaurants collection
+    match /restaurants/{restaurantId} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+
+      // Users subcollection
+      match /users/{userId} {
+        allow read: if isSignedIn();
+        allow write: if isSignedIn();
+      }
+
+      // Menu Categories
+      match /menuCategories/{categoryId} {
+        allow read: if isSignedIn();
+        allow create, update, delete: if isSignedIn();
+      }
+
+      // Menu Items
+      match /menuItems/{itemId} {
+        allow read: if isSignedIn();
+        allow create, update, delete: if isSignedIn();
+      }
+
+      // Orders
+      match /orders/{orderId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update: if isSignedIn();
+        allow delete: if isSignedIn();
+      }
+
+      // Tables
+      match /tables/{tableId} {
+        allow read: if isSignedIn();
+        allow create, update, delete: if isSignedIn();
+      }
+
+      // Bills
+      match /bills/{billId} {
+        allow read: if isSignedIn();
+        allow create: if isSignedIn();
+        allow update, delete: if isSignedIn();
+      }
+
+      // Customers
+      match /customers/{customerId} {
+        allow read: if isSignedIn();
+        allow create, update, delete: if isSignedIn();
+      }
+
+      // Staff
+      match /staff/{staffId} {
+        allow read: if isSignedIn();
+        allow create, update, delete: if isSignedIn();
+      }
+
+      // Inventory
+      match /inventory/{itemId} {
+        allow read: if isSignedIn();
+        allow create, update, delete: if isSignedIn();
+      }
+
+      // Suppliers
+      match /suppliers/{supplierId} {
+        allow read: if isSignedIn();
+        allow create, update, delete: if isSignedIn();
+      }
+    }
+  }
+}
