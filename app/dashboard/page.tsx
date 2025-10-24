@@ -589,7 +589,7 @@ export default function DashboardPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Recent Orders</CardTitle>
-          <Button variant="outline" size="sm" onClick={() => router.push('/orders')}>
+          <Button variant="outline" size="sm" onClick={() => router.push('/dashboard/orders')}>
             View All
           </Button>
         </CardHeader>
