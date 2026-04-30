@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 
 export default function CustomersPage() {
   const { user } = useAuth();
+  const tenantId = user?.tenantId || '';
   const router = useRouter();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +37,7 @@ export default function CustomersPage() {
       return;
     }
 
-    const unsubscribe = subscribeToCollection<Customer>('customers', (data) => {
+    const unsubscribe = subscribeToCollection<Customer>(tenantId, 'customers', (data) => {
       setCustomers(data);
       setLoading(false);
     });
@@ -83,10 +84,10 @@ export default function CustomersPage() {
       }
 
       if (editingCustomer) {
-        await updateDocument('customers', editingCustomer.id, data);
+        await updateDocument(tenantId, 'customers', editingCustomer.id, data);
         toast.success('Customer updated successfully');
       } else {
-        await addDocument('customers', data);
+        await addDocument(tenantId, 'customers', data);
         toast.success('Customer added successfully');
       }
 
@@ -100,7 +101,7 @@ export default function CustomersPage() {
     if (!confirm(`Are you sure you want to delete ${customer.name}?`)) return;
 
     try {
-      await deleteDocument('customers', customer.id);
+      await deleteDocument(tenantId, 'customers', customer.id);
       toast.success('Customer deleted successfully');
     } catch (error: any) {
       toast.error(error.message || 'Failed to delete customer');

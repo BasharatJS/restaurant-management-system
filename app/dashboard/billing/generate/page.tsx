@@ -18,6 +18,7 @@ export default function GenerateBillPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
+  const tenantId = user?.tenantId || '';
 
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
@@ -36,7 +37,7 @@ export default function GenerateBillPage() {
 
   const loadOrder = async () => {
     try {
-      const orderData = await getDocumentById<Order>('orders', orderId!);
+      const orderData = await getDocumentById<Order>(tenantId, 'orders', orderId!);
       if (orderData) {
         setOrder(orderData);
       } else {
@@ -74,7 +75,7 @@ export default function GenerateBillPage() {
         tableNumber: order.tableNumber || null,
         orderType: order.orderType,
         createdAt: Timestamp.now(),
-        createdBy: user?.id || '',
+        createdBy: user?.uid || '',
         createdByName: user?.name || '',
       };
 
@@ -87,10 +88,10 @@ export default function GenerateBillPage() {
       }
 
       // Create bill in Firebase
-      const billId = await addDocument('bills', billData);
+      const billId = await addDocument(tenantId, 'bills', billData);
 
       // Update order status and payment method
-      await updateDocument('orders', order.id, {
+      await updateDocument(tenantId, 'orders', order.id, {
         status: 'completed',
         paymentStatus: 'paid',
         paymentMethod,
@@ -99,7 +100,7 @@ export default function GenerateBillPage() {
 
       // If dine-in, free up the table
       if (order.orderType === 'dine-in' && order.tableId) {
-        await updateDocument('tables', order.tableId, {
+        await updateDocument(tenantId, 'tables', order.tableId, {
           status: 'available',
           currentOrderId: null,
         });
@@ -109,6 +110,7 @@ export default function GenerateBillPage() {
       if (order.customerPhone && order.customerName) {
         try {
           await createOrUpdateCustomerFromOrder(
+            tenantId,
             order.customerPhone,
             order.customerName,
             order.totalAmount

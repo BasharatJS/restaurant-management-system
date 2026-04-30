@@ -20,6 +20,7 @@ import { Timestamp } from 'firebase/firestore';
 
 export default function NewOrderPage() {
   const { user } = useAuth();
+  const tenantId = user?.tenantId || '';
   const router = useRouter();
   const searchParams = useSearchParams();
   const tableIdFromQuery = searchParams.get('tableId');
@@ -59,16 +60,16 @@ export default function NewOrderPage() {
 
     setLoading(true);
 
-    const unsubscribeItems = subscribeToCollection<MenuItem>('menuItems', (data) => {
+    const unsubscribeItems = subscribeToCollection<MenuItem>(tenantId, 'menuItems', (data) => {
       setMenuItems(data.filter((item) => item.isAvailable));
       setLoading(false);
     });
 
-    const unsubscribeCategories = subscribeToCollection<MenuCategory>('menuCategories', (data) => {
+    const unsubscribeCategories = subscribeToCollection<MenuCategory>(tenantId, 'menuCategories', (data) => {
       setCategories(data.filter((cat) => cat.isActive));
     });
 
-    const unsubscribeTables = subscribeToCollection<Table>('tables', setTables);
+    const unsubscribeTables = subscribeToCollection<Table>(tenantId, 'tables', setTables);
 
     // Set table from query params
     if (tableIdFromQuery) {
@@ -113,7 +114,7 @@ export default function NewOrderPage() {
     if (phone.length === 10) {
       setLookingUpCustomer(true);
       try {
-        const customer = await findCustomerByPhone(phone);
+        const customer = await findCustomerByPhone(tenantId, phone);
         if (customer) {
           setExistingCustomer(customer);
           setCustomer(customer.name, phone);
@@ -169,9 +170,9 @@ export default function NewOrderPage() {
         status: 'pending' as const,
         paymentStatus: 'pending' as const,
         paymentMethod: null,
-        waiterId: user?.id || '',
+        waiterId: user?.uid || '',
         waiterName: user?.name || '',
-        createdBy: user?.id || '',
+        createdBy: user?.uid || '',
         orderType,
         createdAt: Timestamp.now(),
         updatedAt: Timestamp.now(),
@@ -190,11 +191,11 @@ export default function NewOrderPage() {
         orderData.customerId = existingCustomer.id;
       }
 
-      const orderId = await addDocument('orders', orderData);
+      const orderId = await addDocument(tenantId, 'orders', orderData);
 
       // Update table status if dine-in
       if (orderType === 'dine-in' && tableId) {
-        await updateDocument('tables', tableId, {
+        await updateDocument(tenantId, 'tables', tableId, {
           status: 'occupied',
           currentOrderId: orderId,
         });

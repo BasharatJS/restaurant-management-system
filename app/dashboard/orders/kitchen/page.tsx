@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 
 export default function KitchenDisplayPage() {
   const { user } = useAuth();
+  const tenantId = user?.tenantId || '';
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +27,7 @@ export default function KitchenDisplayPage() {
 
     // Subscribe to active orders only
     const unsubscribe = subscribeToCollection<Order>(
+      tenantId,
       'orders',
       (data) => {
         // Filter only pending, preparing, and ready orders
@@ -52,7 +54,7 @@ export default function KitchenDisplayPage() {
 
   const handleStatusUpdate = async (orderId: string, newStatus: 'preparing' | 'ready') => {
     try {
-      await updateDocument('orders', orderId, { status: newStatus });
+      await updateDocument(tenantId, 'orders', orderId, { status: newStatus });
       toast.success(`Order status updated to ${newStatus}`);
     } catch (error: any) {
       toast.error(error.message || 'Failed to update order status');

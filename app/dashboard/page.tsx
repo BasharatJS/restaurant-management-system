@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { subscribeToCollection } from '@/lib/firestore';
-import { Order, Table } from '@/types';
+import { Order, Table, InventoryItem } from '@/types';
 import { formatCurrency, formatDate, getStatusColor } from '@/lib/utils';
 import { where, orderBy, limit, Timestamp } from 'firebase/firestore';
 import { useRouter } from 'next/navigation';
@@ -26,6 +26,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [tables, setTables] = useState<Table[]>([]);
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Calculate statistics
@@ -81,10 +82,13 @@ export default function DashboardPage() {
   });
 
   useEffect(() => {
+    if (!user?.tenantId) return;
     setLoading(true);
+    const tid = user.tenantId;
 
     // Subscribe to orders
     const unsubscribeOrders = subscribeToCollection<Order>(
+      tid,
       'orders',
       (data) => {
         setOrders(data);
@@ -94,15 +98,23 @@ export default function DashboardPage() {
     );
 
     // Subscribe to tables
-    const unsubscribeTables = subscribeToCollection<Table>('tables', (data) => {
+    const unsubscribeTables = subscribeToCollection<Table>(tid, 'tables', (data) => {
       setTables(data);
     });
+
+    // Subscribe to inventory (for admin only)
+    const unsubscribeInventory = user?.role === 'admin'
+      ? subscribeToCollection<InventoryItem>(tid, 'inventory', (data) => {
+          setInventory(data);
+        })
+      : () => {};
 
     return () => {
       unsubscribeOrders();
       unsubscribeTables();
+      unsubscribeInventory();
     };
-  }, []);
+  }, [user?.tenantId]);
 
   if (loading) {
     return (
@@ -117,7 +129,7 @@ export default function DashboardPage() {
 
   // Waiter-specific data
   const myTodayOrders = user?.role === 'waiter'
-    ? todayOrders.filter(order => order.waiterId === user?.id)
+    ? todayOrders.filter(order => order.waiterId === user?.uid)
     : todayOrders;
 
   const pendingOrders = orders.filter(order =>
@@ -125,10 +137,13 @@ export default function DashboardPage() {
   );
 
   const myPendingOrders = user?.role === 'waiter'
-    ? pendingOrders.filter(order => order.waiterId === user?.id)
+    ? pendingOrders.filter(order => order.waiterId === user?.uid)
     : pendingOrders;
 
   const availableTables = tables.filter(table => table.status === 'available');
+
+  // Low stock inventory items
+  const lowStockItems = inventory.filter(item => item.currentStock <= item.minimumStock);
 
   return (
     <div className="space-y-6">
@@ -154,6 +169,65 @@ export default function DashboardPage() {
           </Button>
         )}
       </div>
+
+      {/* Low Stock Alert (Admin Only) */}
+      {user?.role === 'admin' && lowStockItems.length > 0 && (
+        <Card className="bg-red-50 border-2 border-red-300">
+          <CardContent className="p-6">
+            <div className="flex items-start gap-4">
+              <div className="rounded-full bg-red-100 p-3">
+                <svg className="h-6 w-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="text-lg font-bold text-red-900">📦 Low Stock Alert!</h3>
+                    <p className="text-sm text-red-700 mt-1">
+                      {lowStockItems.length} item{lowStockItems.length > 1 ? 's' : ''} need{lowStockItems.length === 1 ? 's' : ''} restocking
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push('/dashboard/inventory')}
+                    className="border-red-300 text-red-700 hover:bg-red-100"
+                  >
+                    View Inventory →
+                  </Button>
+                </div>
+                <div className="space-y-2">
+                  {lowStockItems.slice(0, 5).map((item) => (
+                    <div key={item.id} className="flex items-center justify-between bg-white rounded-lg p-3 border border-red-200">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                        <div>
+                          <p className="font-semibold text-gray-900">{item.name}</p>
+                          <p className="text-xs text-gray-600">{item.supplier}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-sm font-bold text-red-600">
+                          {item.currentStock} {item.unit}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Min: {item.minimumStock} {item.unit}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  {lowStockItems.length > 5 && (
+                    <p className="text-sm text-red-700 text-center pt-2">
+                      + {lowStockItems.length - 5} more items
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Stats Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -600,7 +674,7 @@ export default function DashboardPage() {
                 <div
                   key={order.id}
                   className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0 cursor-pointer hover:bg-gray-50 p-2 rounded"
-                  onClick={() => router.push(`/orders/${order.id}`)}
+                  onClick={() => router.push(`/dashboard/orders/${order.id}`)}
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-3">

@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 
 export default function CategoriesPage() {
   const { user } = useAuth();
+  const tenantId = user?.tenantId || '';
   const router = useRouter();
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,7 +29,7 @@ export default function CategoriesPage() {
       return;
     }
 
-    const unsubscribe = subscribeToCollection<MenuCategory>('menuCategories', (data) => {
+    const unsubscribe = subscribeToCollection<MenuCategory>(tenantId, 'menuCategories', (data) => {
       setCategories(data.sort((a, b) => a.order - b.order));
       setLoading(false);
     });
@@ -56,7 +57,7 @@ export default function CategoriesPage() {
     if (!confirm(`Are you sure you want to delete "${category.name}"?`)) return;
 
     try {
-      await deleteDocument('menuCategories', category.id);
+      await deleteDocument(tenantId, 'menuCategories', category.id);
       toast.success('Category deleted successfully');
     } catch (error: any) {
       toast.error(error.message || 'Failed to delete category');
@@ -74,10 +75,10 @@ export default function CategoriesPage() {
       };
 
       if (editingCategory) {
-        await updateDocument('menuCategories', editingCategory.id, data);
+        await updateDocument(tenantId, 'menuCategories', editingCategory.id, data);
         toast.success('Category updated successfully');
       } else {
-        await addDocument('menuCategories', data);
+        await addDocument(tenantId, 'menuCategories', data);
         toast.success('Category added successfully');
       }
 

@@ -1,147 +1,119 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/contexts/AuthContext'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Checkbox } from '@/components/ui/checkbox'
-import { toast } from 'sonner'
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [rememberMe, setRememberMe] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { login, user, isSuperAdmin } = useAuth();
+  const router = useRouter();
 
-  const { login } = useAuth()
-  const router = useRouter()
+  useEffect(() => {
+    if (user) {
+      if (isSuperAdmin) router.push('/super-admin');
+      else router.push('/dashboard');
+    }
+  }, [user, isSuperAdmin, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
-
+    e.preventDefault();
+    setError('');
+    if (!email || !password) { setError('Please enter your email and password'); return; }
+    setLoading(true);
     try {
-      await login(email, password)
-      toast.success('Login successful!')
-      router.push('/dashboard')
+      await login(email, password);
     } catch (err: any) {
-      const errorMessage =
-        err.message || 'Failed to login. Please check your credentials.'
-      setError(errorMessage)
-      toast.error(errorMessage)
+      setError(err.message || 'Login failed. Please try again.');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
-      <Card className="w-full max-w-md shadow-2xl">
-        <CardHeader className="space-y-3 text-center">
-          <div className="mx-auto w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center">
-            <svg
-              className="w-12 h-12 text-white"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-              />
-            </svg>
-          </div>
-          <CardTitle className="text-2xl font-bold">
-            Restaurant Management
-          </CardTitle>
-          <CardDescription>Sign in to your account to continue</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col items-center justify-center px-6" style={{ fontFamily: "'Inter', sans-serif" }}>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');`}</style>
 
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
+      <div className="w-full max-w-md">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <Link href="/" className="inline-flex items-center gap-2.5 mb-4">
+            <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 10h18M3 6h18M3 14h12M3 18h8" />
+              </svg>
+            </div>
+            <span className="text-2xl font-black text-gray-900">Table<span className="text-indigo-600">Flow</span></span>
+          </Link>
+          <h1 className="text-2xl font-black text-gray-900">Sign in to your dashboard</h1>
+          <p className="text-gray-500 mt-2 text-sm">Welcome back! Enter your credentials below.</p>
+        </div>
+
+        <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-8">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">📧 Email Address</label>
+              <input
                 id="email"
                 type="email"
-                placeholder="you@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
+                placeholder="you@restaurant.com"
                 disabled={loading}
+                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 transition-colors text-gray-900 placeholder-gray-400 disabled:opacity-50"
               />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">🔒 Password</label>
+              <input
                 id="password"
                 type="password"
-                placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
+                placeholder="Your password"
                 disabled={loading}
+                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 transition-colors text-gray-900 placeholder-gray-400 disabled:opacity-50"
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Checkbox
-                  id="remember"
-                  checked={rememberMe}
-                  onCheckedChange={(checked) =>
-                    setRememberMe(checked as boolean)
-                  }
-                />
-                <label
-                  htmlFor="remember"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Remember me
-                </label>
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">
+                ⚠️ {error}
               </div>
-              <a href="#" className="text-sm text-blue-600 hover:underline">
-                Forgot password?
-              </a>
-            </div>
+            )}
 
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Signing in...' : 'Sign In'}
-            </Button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold py-4 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all hover:scale-105 disabled:opacity-50 disabled:scale-100 shadow-lg shadow-indigo-200 text-lg"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <span className="animate-spin w-5 h-5 border-2 border-white/30 border-t-white rounded-full" />
+                  Signing in...
+                </span>
+              ) : 'Sign In →'}
+            </button>
           </form>
 
-          <div className="mt-6 text-center text-sm text-gray-600">
-            <p>Demo Credentials:</p>
-            <p className="text-xs mt-1">
-              Admin: admin@restaurant.com / 12345678
-            </p>
-            <p className="text-xs">Waiter: waiter@restaurant.com / waiter123</p>
-            <p className="text-xs">
-              Kitchen: kitchen@restaurant.com / kitchen123
+          <div className="mt-6 pt-6 border-t border-gray-100 text-center">
+            <p className="text-gray-500 text-sm">
+              Don't have an account?{' '}
+              <Link href="/signup" className="text-indigo-600 font-bold hover:text-indigo-700 transition-colors">
+                Start Free Trial →
+              </Link>
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        <p className="text-center text-gray-400 text-xs mt-6">
+          Restaurant Management, Reimagined · <Link href="/" className="hover:text-indigo-400 transition-colors">TableFlow</Link>
+        </p>
+      </div>
     </div>
-  )
+  );
 }

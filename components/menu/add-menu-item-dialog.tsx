@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Switch } from '@/components/ui/switch';
 import { MenuItem, MenuCategory } from '@/types';
 import { addDocument, updateDocument, getAllDocuments } from '@/lib/firestore';
+import { useAuth } from '@/contexts/AuthContext';
 import { Timestamp } from 'firebase/firestore';
 import { toast } from 'sonner';
 import { GST_RATES } from '@/lib/constants';
@@ -22,6 +23,8 @@ interface AddMenuItemDialogProps {
 }
 
 export function AddMenuItemDialog({ open, onClose, item, onSuccess }: AddMenuItemDialogProps) {
+  const { user } = useAuth();
+  const tenantId = user?.tenantId || '';
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<MenuCategory[]>([]);
   const [formData, setFormData] = useState({
@@ -38,7 +41,7 @@ export function AddMenuItemDialog({ open, onClose, item, onSuccess }: AddMenuIte
 
   useEffect(() => {
     // Load categories
-    getAllDocuments<MenuCategory>('menuCategories').then(setCategories);
+    getAllDocuments<MenuCategory>(tenantId, 'menuCategories').then(setCategories);
 
     // If editing, populate form
     if (item) {
@@ -88,11 +91,11 @@ export function AddMenuItemDialog({ open, onClose, item, onSuccess }: AddMenuIte
 
       if (item?.id) {
         // Update existing item
-        await updateDocument('menuItems', item.id, itemData);
+        await updateDocument(tenantId, 'menuItems', item.id, itemData);
         toast.success('Menu item updated successfully');
       } else {
         // Add new item
-        await addDocument('menuItems', itemData);
+        await addDocument(tenantId, 'menuItems', itemData);
         toast.success('Menu item added successfully');
       }
 

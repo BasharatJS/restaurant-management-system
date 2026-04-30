@@ -23,6 +23,7 @@ export default function OrderDetailsPage() {
   const router = useRouter()
   const params = useParams()
   const orderId = params.orderId as string
+  const tenantId = user?.tenantId || ''
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
@@ -33,7 +34,7 @@ export default function OrderDetailsPage() {
 
   const loadOrder = async () => {
     try {
-      const orderData = await getDocumentById<Order>('orders', orderId)
+      const orderData = await getDocumentById<Order>(tenantId, 'orders', orderId)
       if (orderData) {
         setOrder(orderData)
       } else {
@@ -53,7 +54,7 @@ export default function OrderDetailsPage() {
 
     setUpdating(true)
     try {
-      await updateDocument('orders', orderId, { status: newStatus })
+      await updateDocument(tenantId, 'orders', orderId, { status: newStatus })
       setOrder({ ...order, status: newStatus })
       toast.success('Order status updated')
     } catch (error: any) {
@@ -70,7 +71,7 @@ export default function OrderDetailsPage() {
 
     setUpdating(true)
     try {
-      await updateDocument('orders', orderId, {
+      await updateDocument(tenantId, 'orders', orderId, {
         paymentStatus: newPaymentStatus,
       })
       setOrder({ ...order, paymentStatus: newPaymentStatus })

@@ -2,102 +2,108 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Helper functions
+    // ─── Helper Functions ─────────────────────────────────────────────────────
+
     function isSignedIn() {
       return request.auth != null;
     }
 
-    function getUserData() {
-      return get(/databases/$(database)/documents/restaurants/$(restaurantId)/users/$(request.auth.uid)).data;
+    function isTenantOwner(tenantId) {
+      return isSignedIn() &&
+        get(/databases/$(database)/documents/tenants/$(tenantId)).data.ownerUid == request.auth.uid;
     }
 
-    function getUserRole(restaurantId) {
-      return getUserData().role;
-    }
-
-    function isAdmin(restaurantId) {
-      return isSignedIn() && getUserRole(restaurantId) == 'admin';
-    }
-
-    function isWaiter(restaurantId) {
-      return isSignedIn() && getUserRole(restaurantId) == 'waiter';
-    }
-
-    function isKitchen(restaurantId) {
-      return isSignedIn() && getUserRole(restaurantId) == 'kitchen';
-    }
-
-    function hasAnyRole(restaurantId) {
-      return isSignedIn() && (isAdmin(restaurantId) || isWaiter(restaurantId) || isKitchen(restaurantId));
-    }
-
-    // Restaurants collection
-    match /restaurants/{restaurantId} {
+    // ─── TENANTS ─────────────────────────────────────────────────────────────
+    match /tenants/{tenantId} {
+      // Any signed-in user can read (needed for login flow)
       allow read: if isSignedIn();
-      allow write: if isSignedIn();
+      // Only the owner can create their own tenant
+      allow create: if isSignedIn() && request.resource.data.ownerUid == request.auth.uid;
+      // Only owner can update restaurant profile
+      allow update: if isTenantOwner(tenantId);
+      // Never delete tenants
+      allow delete: if false;
 
-      // Users subcollection
+      // ── Users subcollection ──────────────────────────────────────────────
       match /users/{userId} {
-        allow read: if isSignedIn();
-        allow write: if isSignedIn();
-      }
-
-      // Menu Categories
-      match /menuCategories/{categoryId} {
-        allow read: if isSignedIn();
-        allow create, update, delete: if isSignedIn();
-      }
-
-      // Menu Items
-      match /menuItems/{itemId} {
-        allow read: if isSignedIn();
-        allow create, update, delete: if isSignedIn();
-      }
-
-      // Orders
-      match /orders/{orderId} {
         allow read: if isSignedIn();
         allow create: if isSignedIn();
         allow update: if isSignedIn();
-        allow delete: if isSignedIn();
+        allow delete: if isTenantOwner(tenantId);
       }
 
-      // Tables
+      // ── Menu Categories ──────────────────────────────────────────────────
+      match /menuCategories/{categoryId} {
+        allow read, write: if isSignedIn();
+      }
+
+      // ── Menu Items ───────────────────────────────────────────────────────
+      match /menuItems/{itemId} {
+        allow read, write: if isSignedIn();
+      }
+
+      // ── Orders ───────────────────────────────────────────────────────────
+      match /orders/{orderId} {
+        allow read, write: if isSignedIn();
+      }
+
+      // ── Tables ───────────────────────────────────────────────────────────
       match /tables/{tableId} {
-        allow read: if isSignedIn();
-        allow create, update, delete: if isSignedIn();
+        allow read, write: if isSignedIn();
       }
 
-      // Bills
+      // ── Bills ────────────────────────────────────────────────────────────
       match /bills/{billId} {
-        allow read: if isSignedIn();
-        allow create: if isSignedIn();
-        allow update, delete: if isSignedIn();
+        allow read, write: if isSignedIn();
       }
 
-      // Customers
+      // ── Customers ────────────────────────────────────────────────────────
       match /customers/{customerId} {
-        allow read: if isSignedIn();
-        allow create, update, delete: if isSignedIn();
+        allow read, write: if isSignedIn();
       }
 
-      // Staff
+      // ── Staff ────────────────────────────────────────────────────────────
       match /staff/{staffId} {
-        allow read: if isSignedIn();
-        allow create, update, delete: if isSignedIn();
+        allow read, write: if isSignedIn();
       }
 
-      // Inventory
+      // ── Inventory ────────────────────────────────────────────────────────
       match /inventory/{itemId} {
-        allow read: if isSignedIn();
-        allow create, update, delete: if isSignedIn();
+        allow read, write: if isSignedIn();
       }
 
-      // Suppliers
+      // ── Suppliers ────────────────────────────────────────────────────────
       match /suppliers/{supplierId} {
-        allow read: if isSignedIn();
-        allow create, update, delete: if isSignedIn();
+        allow read, write: if isSignedIn();
       }
+
+      // ── Expenses ─────────────────────────────────────────────────────────
+      match /expenses/{expenseId} {
+        allow read, write: if isSignedIn();
+      }
+
+      // ── Catch-all for any other subcollections ────────────────────────
+      match /{document=**} {
+        allow read, write: if isSignedIn();
+      }
+    }
+
+    // ─── SUBSCRIPTIONS (global) ──────────────────────────────────────────────
+    match /subscriptions/{subId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if false;
+    }
+
+    // ─── USER TENANT INDEX (global) ──────────────────────────────────────────
+    // Maps uid → tenantId for staff login lookup
+    match /user_tenant_index/{indexId} {
+      // Public read: needed during login to find tenant
+      allow read: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if false;
     }
   }
 }

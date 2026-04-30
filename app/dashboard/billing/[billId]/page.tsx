@@ -15,6 +15,7 @@ export default function BillDetailsPage() {
   const router = useRouter();
   const params = useParams();
   const billId = params.billId as string;
+  const tenantId = user?.tenantId || '';
   const [bill, setBill] = useState<Bill | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -24,7 +25,7 @@ export default function BillDetailsPage() {
 
   const loadBill = async () => {
     try {
-      const billData = await getDocumentById<Bill>('bills', billId);
+      const billData = await getDocumentById<Bill>(tenantId, 'bills', billId);
       if (billData) {
         setBill(billData);
       } else {
@@ -55,9 +56,108 @@ export default function BillDetailsPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+    <>
+      {/* Print Styles */}
+      <style jsx global>{`
+        @media print {
+          /* Hide sidebar and navigation */
+          nav,
+          aside,
+          [class*="sidebar"],
+          [class*="Sidebar"] {
+            display: none !important;
+          }
+
+          /* Hide header */
+          header {
+            display: none !important;
+          }
+
+          /* Hide all buttons and UI controls */
+          .print-hide,
+          button {
+            display: none !important;
+          }
+
+          /* Reset body and html */
+          html,
+          body {
+            background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+          }
+
+          /* Make main content full width */
+          main {
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+          }
+
+          /* Style the bill container for thermal printer look */
+          .print-content {
+            max-width: 80mm !important; /* Thermal printer width */
+            margin: 0 auto !important;
+            padding: 10mm !important;
+            box-shadow: none !important;
+            border: none !important;
+          }
+
+          /* Professional thermal printer layout */
+          @page {
+            size: 80mm auto; /* Thermal printer size */
+            margin: 0;
+          }
+
+          /* Remove all background colors and borders */
+          * {
+            background: white !important;
+            color: black !important;
+            border-color: black !important;
+          }
+
+          /* Adjust font sizes for thermal print */
+          h1,
+          h2 {
+            font-size: 16pt !important;
+          }
+
+          p,
+          td,
+          th,
+          span {
+            font-size: 10pt !important;
+          }
+
+          /* Table styling for thermal printer */
+          table {
+            width: 100% !important;
+            border-collapse: collapse !important;
+          }
+
+          table,
+          th,
+          td {
+            border: none !important;
+            border-bottom: 1px dashed #000 !important;
+          }
+
+          /* Remove card styling for print */
+          [class*="card"],
+          [class*="Card"] {
+            border: none !important;
+            box-shadow: none !important;
+            background: white !important;
+            padding: 0 !important;
+          }
+        }
+      `}</style>
+
+      <div className="max-w-4xl mx-auto space-y-6 print-content">
+        {/* Header */}
+        <div className="flex items-center justify-between print-hide">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Bill Invoice</h1>
           <p className="mt-1 text-sm text-gray-600">Bill #{bill.billNumber}</p>
@@ -201,5 +301,6 @@ export default function BillDetailsPage() {
         </CardContent>
       </Card>
     </div>
+    </>
   );
 }

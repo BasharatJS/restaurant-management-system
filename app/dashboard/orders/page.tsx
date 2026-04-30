@@ -15,6 +15,7 @@ import { orderBy } from 'firebase/firestore';
 
 export default function OrdersPage() {
   const { user } = useAuth();
+  const tenantId = user?.tenantId || '';
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +29,7 @@ export default function OrdersPage() {
     }
 
     const unsubscribe = subscribeToCollection<Order>(
+      tenantId,
       'orders',
       (data) => {
         setOrders(data);

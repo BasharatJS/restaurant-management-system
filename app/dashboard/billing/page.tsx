@@ -14,6 +14,7 @@ import { orderBy } from 'firebase/firestore';
 
 export default function BillingPage() {
   const { user } = useAuth();
+  const tenantId = user?.tenantId || '';
   const router = useRouter();
   const [bills, setBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +27,7 @@ export default function BillingPage() {
     }
 
     const unsubscribe = subscribeToCollection<Bill>(
+      tenantId,
       'bills',
       (data) => {
         setBills(data);
@@ -35,7 +37,7 @@ export default function BillingPage() {
     );
 
     return () => unsubscribe();
-  }, [user, router]);
+  }, [tenantId]);
 
   const filteredBills = bills.filter(
     (bill) =>

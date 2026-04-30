@@ -17,23 +17,26 @@ import {
   QueryConstraint,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { RESTAURANT_ID } from './constants';
 
 /**
- * Get restaurant collection reference
+ * Get the tenant's subcollection reference.
+ * All data is scoped to: tenants/{tenantId}/{collectionName}
  */
-export function getRestaurantCollection(collectionName: string) {
-  return collection(db, 'restaurants', RESTAURANT_ID, collectionName);
+export function getTenantCollection(tenantId: string, collectionName: string) {
+  return collection(db, 'tenants', tenantId, collectionName);
 }
 
 /**
- * Get document by ID
+ * Get document by ID from a tenant's subcollection
  */
-export async function getDocumentById<T>(collectionName: string, docId: string): Promise<T | null> {
+export async function getDocumentById<T>(
+  tenantId: string,
+  collectionName: string,
+  docId: string
+): Promise<T | null> {
   try {
-    const docRef = doc(getRestaurantCollection(collectionName), docId);
+    const docRef = doc(getTenantCollection(tenantId, collectionName), docId);
     const docSnap = await getDoc(docRef);
-
     if (docSnap.exists()) {
       return { id: docSnap.id, ...docSnap.data() } as T;
     }
@@ -45,17 +48,17 @@ export async function getDocumentById<T>(collectionName: string, docId: string):
 }
 
 /**
- * Get all documents from a collection
+ * Get all documents from a tenant's subcollection
  */
 export async function getAllDocuments<T>(
+  tenantId: string,
   collectionName: string,
   constraints: QueryConstraint[] = []
 ): Promise<T[]> {
   try {
-    const collectionRef = getRestaurantCollection(collectionName);
+    const collectionRef = getTenantCollection(tenantId, collectionName);
     const q = constraints.length > 0 ? query(collectionRef, ...constraints) : collectionRef;
     const querySnapshot = await getDocs(q);
-
     return querySnapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data(),
@@ -67,17 +70,18 @@ export async function getAllDocuments<T>(
 }
 
 /**
- * Add document to collection
+ * Add document to a tenant's subcollection
  */
 export async function addDocument<T>(
+  tenantId: string,
   collectionName: string,
   data: Omit<T, 'id'>
 ): Promise<string> {
   try {
-    const collectionRef = getRestaurantCollection(collectionName);
+    const collectionRef = getTenantCollection(tenantId, collectionName);
     const docRef = await addDoc(collectionRef, {
       ...data,
-      restaurantId: RESTAURANT_ID,
+      restaurantId: tenantId,
     });
     return docRef.id;
   } catch (error) {
@@ -87,15 +91,16 @@ export async function addDocument<T>(
 }
 
 /**
- * Update document
+ * Update document in a tenant's subcollection
  */
 export async function updateDocument<T>(
+  tenantId: string,
   collectionName: string,
   docId: string,
   data: Partial<T>
 ): Promise<void> {
   try {
-    const docRef = doc(getRestaurantCollection(collectionName), docId);
+    const docRef = doc(getTenantCollection(tenantId, collectionName), docId);
     await updateDoc(docRef, { ...data, updatedAt: Timestamp.now() });
   } catch (error) {
     console.error(`Error updating document in ${collectionName}:`, error);
@@ -104,11 +109,15 @@ export async function updateDocument<T>(
 }
 
 /**
- * Delete document
+ * Delete document from a tenant's subcollection
  */
-export async function deleteDocument(collectionName: string, docId: string): Promise<void> {
+export async function deleteDocument(
+  tenantId: string,
+  collectionName: string,
+  docId: string
+): Promise<void> {
   try {
-    const docRef = doc(getRestaurantCollection(collectionName), docId);
+    const docRef = doc(getTenantCollection(tenantId, collectionName), docId);
     await deleteDoc(docRef);
   } catch (error) {
     console.error(`Error deleting document from ${collectionName}:`, error);
@@ -117,14 +126,15 @@ export async function deleteDocument(collectionName: string, docId: string): Pro
 }
 
 /**
- * Subscribe to collection changes
+ * Subscribe to collection changes (real-time)
  */
 export function subscribeToCollection<T>(
+  tenantId: string,
   collectionName: string,
   callback: (data: T[]) => void,
   constraints: QueryConstraint[] = []
 ): () => void {
-  const collectionRef = getRestaurantCollection(collectionName);
+  const collectionRef = getTenantCollection(tenantId, collectionName);
   const q = constraints.length > 0 ? query(collectionRef, ...constraints) : collectionRef;
 
   return onSnapshot(
@@ -143,14 +153,15 @@ export function subscribeToCollection<T>(
 }
 
 /**
- * Subscribe to document changes
+ * Subscribe to a single document (real-time)
  */
 export function subscribeToDocument<T>(
+  tenantId: string,
   collectionName: string,
   docId: string,
   callback: (data: T | null) => void
 ): () => void {
-  const docRef = doc(getRestaurantCollection(collectionName), docId);
+  const docRef = doc(getTenantCollection(tenantId, collectionName), docId);
 
   return onSnapshot(
     docRef,
@@ -168,16 +179,17 @@ export function subscribeToDocument<T>(
 }
 
 /**
- * Query documents with conditions
+ * Query documents with conditions from a tenant's subcollection
  */
 export async function queryDocuments<T>(
+  tenantId: string,
   collectionName: string,
   conditions: { field: string; operator: any; value: any }[],
   orderByField?: string,
   limitCount?: number
 ): Promise<T[]> {
   try {
-    const collectionRef = getRestaurantCollection(collectionName);
+    const collectionRef = getTenantCollection(tenantId, collectionName);
     const constraints: QueryConstraint[] = conditions.map(({ field, operator, value }) =>
       where(field, operator, value)
     );
@@ -204,15 +216,17 @@ export async function queryDocuments<T>(
 }
 
 /**
- * Find customer by phone number
+ * Find customer by phone number within a tenant
  */
-export async function findCustomerByPhone(phone: string): Promise<any | null> {
+export async function findCustomerByPhone(
+  tenantId: string,
+  phone: string
+): Promise<any | null> {
   try {
-    if (!phone || phone.trim() === '') {
-      return null;
-    }
+    if (!phone || phone.trim() === '') return null;
 
     const customers = await queryDocuments<any>(
+      tenantId,
       'customers',
       [{ field: 'phone', operator: '==', value: phone.trim() }],
       undefined,
@@ -230,19 +244,17 @@ export async function findCustomerByPhone(phone: string): Promise<any | null> {
  * Update customer stats after order completion
  */
 export async function updateCustomerStats(
+  tenantId: string,
   customerId: string,
   orderAmount: number
 ): Promise<void> {
   try {
-    const customer = await getDocumentById<any>('customers', customerId);
-    if (!customer) {
-      throw new Error('Customer not found');
-    }
+    const customer = await getDocumentById<any>(tenantId, 'customers', customerId);
+    if (!customer) throw new Error('Customer not found');
 
-    // Calculate loyalty points (₹10 = 1 point)
     const pointsEarned = Math.floor(orderAmount / 10);
 
-    await updateDocument('customers', customerId, {
+    await updateDocument(tenantId, 'customers', customerId, {
       totalOrders: (customer.totalOrders || 0) + 1,
       totalSpent: (customer.totalSpent || 0) + orderAmount,
       lastVisit: Timestamp.now(),
@@ -258,21 +270,19 @@ export async function updateCustomerStats(
  * Create or update customer from order
  */
 export async function createOrUpdateCustomerFromOrder(
+  tenantId: string,
   phone: string,
   name: string,
   orderAmount: number,
   email?: string
 ): Promise<string> {
   try {
-    // Check if customer exists
-    const existingCustomer = await findCustomerByPhone(phone);
+    const existingCustomer = await findCustomerByPhone(tenantId, phone);
 
     if (existingCustomer) {
-      // Update existing customer
-      await updateCustomerStats(existingCustomer.id, orderAmount);
+      await updateCustomerStats(tenantId, existingCustomer.id, orderAmount);
       return existingCustomer.id;
     } else {
-      // Create new customer
       const pointsEarned = Math.floor(orderAmount / 10);
       const customerData: any = {
         name: name.trim(),
@@ -283,12 +293,11 @@ export async function createOrUpdateCustomerFromOrder(
         loyaltyPoints: pointsEarned,
       };
 
-      // Only add email if it exists and is not empty
       if (email && email.trim() !== '') {
         customerData.email = email.trim();
       }
 
-      const customerId = await addDocument('customers', customerData);
+      const customerId = await addDocument(tenantId, 'customers', customerData);
       return customerId;
     }
   } catch (error) {

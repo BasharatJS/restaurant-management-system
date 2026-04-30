@@ -16,6 +16,7 @@ import { TABLE_STATUS } from '@/lib/constants';
 
 export default function TablesPage() {
   const { user } = useAuth();
+  const tenantId = user?.tenantId || '';
   const router = useRouter();
   const [tables, setTables] = useState<Table[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,7 +36,7 @@ export default function TablesPage() {
       return;
     }
 
-    const unsubscribe = subscribeToCollection<Table>('tables', (data) => {
+    const unsubscribe = subscribeToCollection<Table>(tenantId, 'tables', (data) => {
       setTables(data.sort((a, b) => a.tableNumber - b.tableNumber));
       setLoading(false);
     });
@@ -63,7 +64,7 @@ export default function TablesPage() {
     if (!confirm(`Are you sure you want to delete Table ${table.tableNumber}?`)) return;
 
     try {
-      await deleteDocument('tables', table.id);
+      await deleteDocument(tenantId, 'tables', table.id);
       toast.success('Table deleted successfully');
     } catch (error: any) {
       toast.error(error.message || 'Failed to delete table');
@@ -87,10 +88,10 @@ export default function TablesPage() {
       }
 
       if (editingTable) {
-        await updateDocument('tables', editingTable.id, data);
+        await updateDocument(tenantId, 'tables', editingTable.id, data);
         toast.success('Table updated successfully');
       } else {
-        await addDocument('tables', data);
+        await addDocument(tenantId, 'tables', data);
         toast.success('Table added successfully');
       }
 
@@ -109,7 +110,7 @@ export default function TablesPage() {
     if (!selectedTable) return;
 
     try {
-      await updateDocument('tables', selectedTable.id, {
+      await updateDocument(tenantId, 'tables', selectedTable.id, {
         status,
         ...(status === 'available' && { currentOrderId: null }),
       });

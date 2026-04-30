@@ -14,6 +14,7 @@ import { useRouter } from 'next/navigation';
 
 export default function MenuPage() {
   const { user } = useAuth();
+  const tenantId = user?.tenantId || '';
   const router = useRouter();
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [categories, setCategories] = useState<MenuCategory[]>([]);
@@ -33,13 +34,14 @@ export default function MenuPage() {
     setLoading(true);
 
     // Subscribe to menu items
-    const unsubscribeItems = subscribeToCollection<MenuItem>('menuItems', (data) => {
+    const unsubscribeItems = subscribeToCollection<MenuItem>(tenantId, 'menuItems', (data) => {
       setMenuItems(data);
       setLoading(false);
     });
 
     // Subscribe to categories
     const unsubscribeCategories = subscribeToCollection<MenuCategory>(
+      tenantId,
       'menuCategories',
       setCategories
     );
@@ -61,7 +63,7 @@ export default function MenuPage() {
     }
 
     try {
-      await deleteDocument('menuItems', item.id);
+      await deleteDocument(tenantId, 'menuItems', item.id);
       toast.success('Menu item deleted successfully');
     } catch (error: any) {
       toast.error(error.message || 'Failed to delete menu item');
@@ -70,7 +72,7 @@ export default function MenuPage() {
 
   const handleToggleAvailability = async (item: MenuItem) => {
     try {
-      await updateDocument('menuItems', item.id, {
+      await updateDocument(tenantId, 'menuItems', item.id, {
         isAvailable: !item.isAvailable,
       });
       toast.success(`${item.name} is now ${!item.isAvailable ? 'available' : 'unavailable'}`);

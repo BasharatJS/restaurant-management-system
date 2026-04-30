@@ -16,6 +16,7 @@ import { toast } from 'sonner';
 
 export default function InventoryPage() {
   const { user } = useAuth();
+  const tenantId = user?.tenantId || '';
   const router = useRouter();
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,7 +37,7 @@ export default function InventoryPage() {
       return;
     }
 
-    const unsubscribe = subscribeToCollection<InventoryItem>('inventory', (data) => {
+    const unsubscribe = subscribeToCollection<InventoryItem>(tenantId, 'inventory', (data) => {
       setItems(data);
       setLoading(false);
     });
@@ -58,10 +59,10 @@ export default function InventoryPage() {
       };
 
       if (editingItem) {
-        await updateDocument('inventory', editingItem.id, data);
+        await updateDocument(tenantId, 'inventory', editingItem.id, data);
         toast.success('Inventory updated');
       } else {
-        await addDocument('inventory', data);
+        await addDocument(tenantId, 'inventory', data);
         toast.success('Item added');
       }
       setDialogOpen(false);
@@ -110,7 +111,7 @@ export default function InventoryPage() {
               </div>
               <div className="flex gap-2 mt-3">
                 <Button size="sm" variant="outline" onClick={() => { setEditingItem(item); setFormData({ name: item.name, unit: item.unit, currentStock: item.currentStock.toString(), minimumStock: item.minimumStock.toString(), price: item.price.toString(), supplier: item.supplier }); setDialogOpen(true); }} className="flex-1">Edit</Button>
-                <Button size="sm" variant="outline" onClick={async () => { if (confirm('Delete?')) { await deleteDocument('inventory', item.id); toast.success('Deleted'); } }} className="flex-1 text-red-600">Delete</Button>
+                <Button size="sm" variant="outline" onClick={async () => { if (confirm('Delete?')) { await deleteDocument(tenantId, 'inventory', item.id); toast.success('Deleted'); } }} className="flex-1 text-red-600">Delete</Button>
               </div>
             </CardContent>
           </Card>

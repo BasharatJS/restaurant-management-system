@@ -44,7 +44,7 @@
 }
 
 :root {
-  --radius: 0.625rem;
+  --radius: 0.5rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -117,7 +117,9 @@
     @apply border-border outline-ring/50;
   }
 
+  /* 80%-zoom look: reduce base font from 16px to 13px */
   html {
+    font-size: 13px;
     scroll-behavior: smooth;
   }
 
@@ -129,17 +131,13 @@
 /* Hide scrollbar but keep functionality */
 @layer utilities {
   .scrollbar-hide {
-    /* Firefox */
     scrollbar-width: none;
-    /* IE and Edge */
     -ms-overflow-style: none;
-    /* Smooth scrolling */
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
   }
 
   .scrollbar-hide::-webkit-scrollbar {
-    /* Chrome, Safari, and Opera */
     display: none;
   }
 }

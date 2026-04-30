@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 
 export default function StaffPage() {
   const { user } = useAuth();
+  const tenantId = user?.tenantId || '';
   const router = useRouter();
   const [staff, setStaff] = useState<Staff[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,7 +40,7 @@ export default function StaffPage() {
       return;
     }
 
-    const unsubscribe = subscribeToCollection<Staff>('staff', (data) => {
+    const unsubscribe = subscribeToCollection<Staff>(tenantId, 'staff', (data) => {
       setStaff(data);
       setLoading(false);
     });
@@ -81,10 +82,10 @@ export default function StaffPage() {
       };
 
       if (editingStaff) {
-        await updateDocument('staff', editingStaff.id, data);
+        await updateDocument(tenantId, 'staff', editingStaff.id, data);
         toast.success('Staff updated successfully');
       } else {
-        await addDocument('staff', data);
+        await addDocument(tenantId, 'staff', data);
         toast.success('Staff added successfully');
       }
 
@@ -98,7 +99,7 @@ export default function StaffPage() {
     if (!confirm(`Are you sure you want to delete ${staffMember.name}?`)) return;
 
     try {
-      await deleteDocument('staff', staffMember.id);
+      await deleteDocument(tenantId, 'staff', staffMember.id);
       toast.success('Staff deleted successfully');
     } catch (error: any) {
       toast.error(error.message || 'Failed to delete staff');

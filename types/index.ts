@@ -1,24 +1,24 @@
 import { Timestamp } from 'firebase/firestore';
 
-// User Roles
+// ─── User Roles ───────────────────────────────────────────────────────────────
 export type UserRole = 'admin' | 'waiter' | 'kitchen';
 
-// Order Status
+// ─── Order Status ─────────────────────────────────────────────────────────────
 export type OrderStatus = 'pending' | 'preparing' | 'ready' | 'served' | 'completed' | 'cancelled';
 
-// Payment Status
+// ─── Payment Status ───────────────────────────────────────────────────────────
 export type PaymentStatus = 'pending' | 'paid' | 'refunded';
 
-// Payment Method
+// ─── Payment Method ───────────────────────────────────────────────────────────
 export type PaymentMethod = 'cash' | 'upi' | 'card';
 
-// Order Type
+// ─── Order Type ───────────────────────────────────────────────────────────────
 export type OrderType = 'dine-in' | 'takeaway' | 'delivery';
 
-// Table Status
+// ─── Table Status ─────────────────────────────────────────────────────────────
 export type TableStatus = 'available' | 'occupied' | 'reserved';
 
-// Restaurant
+// ─── Restaurant / Tenant ─────────────────────────────────────────────────────
 export interface Restaurant {
   id: string;
   name: string;
@@ -29,7 +29,7 @@ export interface Restaurant {
   createdAt: Timestamp;
 }
 
-// User
+// ─── Existing User (kept for backward compat inside tenant) ──────────────────
 export interface User {
   id: string;
   name: string;
@@ -41,7 +41,7 @@ export interface User {
   restaurantId: string;
 }
 
-// Table
+// ─── Table ────────────────────────────────────────────────────────────────────
 export interface Table {
   id: string;
   tableNumber: number;
@@ -52,7 +52,7 @@ export interface Table {
   restaurantId: string;
 }
 
-// Menu Category
+// ─── Menu Category ────────────────────────────────────────────────────────────
 export interface MenuCategory {
   id: string;
   name: string;
@@ -61,23 +61,23 @@ export interface MenuCategory {
   restaurantId: string;
 }
 
-// Menu Item
+// ─── Menu Item ────────────────────────────────────────────────────────────────
 export interface MenuItem {
   id: string;
   name: string;
-  category: string; // categoryId reference
+  category: string;
   price: number;
   description: string;
   image: string;
   isVeg: boolean;
   isAvailable: boolean;
-  preparationTime: number; // in minutes
-  gstRate: number; // 5, 12, or 18
-  ingredients?: string[]; // for inventory
+  preparationTime: number;
+  gstRate: number;
+  ingredients?: string[];
   restaurantId: string;
 }
 
-// Order Item
+// ─── Order Item ───────────────────────────────────────────────────────────────
 export interface OrderItem {
   itemId: string;
   itemName: string;
@@ -87,10 +87,10 @@ export interface OrderItem {
   gstRate: number;
 }
 
-// Order
+// ─── Order ────────────────────────────────────────────────────────────────────
 export interface Order {
   id: string;
-  orderNumber: string; // ORD-YYYYMMDD-XXX
+  orderNumber: string;
   tableId: string | null;
   tableNumber: number | null;
   items: OrderItem[];
@@ -106,7 +106,7 @@ export interface Order {
   waiterName: string;
   customerName?: string;
   customerPhone?: string;
-  customerId?: string; // Reference to customer document for automatic tracking
+  customerId?: string;
   deliveryAddress?: string;
   orderType: OrderType;
   createdAt: Timestamp;
@@ -116,10 +116,10 @@ export interface Order {
   restaurantId: string;
 }
 
-// Bill
+// ─── Bill ─────────────────────────────────────────────────────────────────────
 export interface Bill {
   id: string;
-  billNumber: string; // INV-YYYYMMDD-XXX
+  billNumber: string;
   orderId: string;
   orderNumber: string;
   items: OrderItem[];
@@ -132,7 +132,7 @@ export interface Bill {
   paymentMethod: PaymentMethod;
   orderType: OrderType;
   createdAt: Timestamp;
-  createdBy: string; // userId
+  createdBy: string;
   createdByName: string;
   restaurantId?: string;
   customerName?: string;
@@ -140,7 +140,7 @@ export interface Bill {
   tableNumber?: number | null;
 }
 
-// Customer
+// ─── Customer ─────────────────────────────────────────────────────────────────
 export interface Customer {
   id: string;
   name: string;
@@ -154,7 +154,7 @@ export interface Customer {
   restaurantId: string;
 }
 
-// Staff
+// ─── Staff ────────────────────────────────────────────────────────────────────
 export interface Staff {
   id: string;
   name: string;
@@ -168,11 +168,11 @@ export interface Staff {
   restaurantId: string;
 }
 
-// Inventory Item
+// ─── Inventory Item ───────────────────────────────────────────────────────────
 export interface InventoryItem {
   id: string;
   name: string;
-  unit: string; // kg, liter, pieces
+  unit: string;
   currentStock: number;
   minimumStock: number;
   price: number;
@@ -181,19 +181,19 @@ export interface InventoryItem {
   restaurantId: string;
 }
 
-// Supplier
+// ─── Supplier ─────────────────────────────────────────────────────────────────
 export interface Supplier {
   id: string;
   name: string;
   phone: string;
   email: string;
   address: string;
-  items: string[]; // array of itemIds
+  items: string[];
   totalPurchased: number;
   restaurantId: string;
 }
 
-// Auth State
+// ─── Auth State (legacy) ──────────────────────────────────────────────────────
 export interface AuthState {
   user: User | null;
   loading: boolean;
@@ -203,7 +203,7 @@ export interface AuthState {
   setUser: (user: User | null) => void;
 }
 
-// Dashboard Stats
+// ─── Dashboard Stats ──────────────────────────────────────────────────────────
 export interface DashboardStats {
   todayRevenue: number;
   todayOrders: number;
@@ -213,16 +213,15 @@ export interface DashboardStats {
   revenueChart: { date: string; revenue: number }[];
 }
 
-// Discount Type
+// ─── Discount ─────────────────────────────────────────────────────────────────
 export type DiscountType = 'percentage' | 'flat';
 
-// Discount
 export interface Discount {
   type: DiscountType;
   value: number;
 }
 
-// Restaurant Settings
+// ─── Restaurant Settings ──────────────────────────────────────────────────────
 export interface RestaurantSettings {
   restaurantId: string;
   name: string;
@@ -234,10 +233,104 @@ export interface RestaurantSettings {
   currency: string;
   timezone: string;
   enableLoyaltyPoints: boolean;
-  loyaltyPointsRatio: number; // points per rupee
+  loyaltyPointsRatio: number;
   enableOnlineOrdering: boolean;
   taxRates: {
     cgst: number;
     sgst: number;
   };
+}
+
+// ─── Expense ──────────────────────────────────────────────────────────────────
+export type ExpenseCategory = 'rent' | 'utilities' | 'salaries' | 'supplies' | 'marketing' | 'maintenance' | 'other';
+
+export interface Expense {
+  id: string;
+  title: string;
+  amount: number;
+  category: ExpenseCategory;
+  description?: string;
+  date: Timestamp;
+  createdBy: string;
+  createdByName: string;
+  restaurantId: string;
+  createdAt: Timestamp;
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SAAS / MULTI-TENANCY MODELS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+export type SubscriptionPlan = 'monthly' | 'annual';
+export type SubscriptionStatus = 'trial' | 'active' | 'expired' | 'cancelled';
+
+export interface Tenant {
+  id?: string;
+  restaurantName: string;
+  ownerName: string;
+  ownerEmail: string;
+  ownerUid: string;
+  phone?: string;
+  address?: string;
+  gstin?: string;
+  email?: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export interface Subscription {
+  id?: string;
+  tenantId: string;
+  plan: SubscriptionPlan | null;
+  status: SubscriptionStatus;
+  trialStartDate: Timestamp;
+  trialEndDate: Timestamp;
+  subscriptionStartDate?: Timestamp;
+  subscriptionEndDate?: Timestamp;
+  razorpayOrderId?: string;
+  razorpayPaymentId?: string;
+  razorpaySignature?: string;
+  amount?: number;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export interface TenantUser {
+  id?: string;
+  uid: string;
+  email: string;
+  name: string;
+  role: UserRole;
+  isActive: boolean;
+  tenantId: string;
+  phone?: string;
+  invitedAt?: Timestamp;
+  registeredAt?: Timestamp;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+// ─── Auth Context User (enriched) ─────────────────────────────────────────────
+export interface AuthUser {
+  uid: string;
+  email: string;
+  name: string;
+  restaurantName: string;
+  restaurantPhone: string;
+  restaurantAddress: string;
+  restaurantGstin?: string;
+  restaurantEmail?: string;
+  role: UserRole;
+  isActive: boolean;
+  tenantId: string;
+  subscriptionStatus: SubscriptionStatus;
+  trialEndsAt: Date | null;
+  trialDaysRemaining: number;
+}
+
+// ─── Super Admin Types ────────────────────────────────────────────────────────
+export interface TenantWithSubscription {
+  tenant: Tenant;
+  subscription: Subscription | null;
+  userCount: number;
 }

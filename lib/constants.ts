@@ -45,9 +45,6 @@ export const TABLE_STATUS = {
   RESERVED: 'reserved',
 } as const;
 
-// Restaurant ID
-export const RESTAURANT_ID = process.env.NEXT_PUBLIC_RESTAURANT_ID || 'default_restaurant';
-
 // Date Formats
 export const DATE_FORMATS = {
   DISPLAY: 'MMM dd, yyyy',
@@ -69,3 +66,12 @@ export const CURRENCY_CODE = 'INR';
 
 // Loyalty Points
 export const DEFAULT_LOYALTY_POINTS_RATIO = 10; // 10 rupees = 1 point
+
+// Subscription Pricing (in INR)
+export const PRICING = {
+  MONTHLY: 999,
+  ANNUAL: 9999,
+} as const;
+
+// Trial period (days)
+export const TRIAL_DAYS = 7;
