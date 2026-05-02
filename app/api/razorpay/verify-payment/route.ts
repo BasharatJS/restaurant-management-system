@@ -13,7 +13,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing payment details' }, { status: 400 });
     }
 
-    const keySecret = process.env.RAZORPAY_KEY_SECRET!;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keySecret) {
+      return NextResponse.json({ error: 'Razorpay not configured' }, { status: 503 });
+    }
     const body = razorpay_order_id + '|' + razorpay_payment_id;
 
     const expectedSignature = crypto

@@ -50,105 +50,97 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#0a0f1e 0%,#111827 100%)', display: 'flex', flexDirection: 'column', fontFamily: "'Inter',sans-serif" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');`}</style>
 
       {success && (
-        <div className="fixed inset-0 z-50 bg-white flex items-center justify-center">
-          <div className="text-center">
-            <div className="text-6xl mb-4">🎉</div>
-            <h2 className="text-2xl font-black text-gray-900 mb-2">Welcome to TableFlow!</h2>
-            <p className="text-gray-500 mb-2">Your 7-day free trial has started.</p>
-            <p className="text-indigo-600 font-semibold">Setting up your dashboard...</p>
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto mt-4" />
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: '#0a0f1e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <div style={{ fontSize: 64, marginBottom: 16 }}>🎉</div>
+            <h2 style={{ fontSize: 26, fontWeight: 900, color: '#f8fafc', marginBottom: 8 }}>Welcome to TableFlow!</h2>
+            <p style={{ color: '#9ca3af', marginBottom: 8 }}>Your 7-day free trial has started.</p>
+            <p style={{ color: '#f59e0b', fontWeight: 700 }}>Setting up your dashboard...</p>
+            <div style={{ width: 32, height: 32, border: '3px solid rgba(245,158,11,0.2)', borderTopColor: '#f59e0b', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '16px auto 0' }} />
           </div>
         </div>
       )}
 
-      <nav className="w-full px-6 py-5 flex items-center justify-between max-w-6xl mx-auto">
-        <Link href="/" className="flex items-center gap-2.5">
-          <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 10h18M3 6h18M3 14h12M3 18h8" /></svg>
-          </div>
-          <span className="text-xl font-black text-gray-900">Table<span className="text-indigo-600">Flow</span></span>
+      <nav style={{ padding: '16px 5%', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Link href="/" style={{ textDecoration: 'none' }}>
+          <div style={{ fontSize: 22, fontWeight: 900, color: '#f8fafc', letterSpacing: '-0.5px' }}>Table<span style={{ color: '#f59e0b' }}>Flow</span></div>
+          <div style={{ fontSize: 10, color: '#4b5563', fontWeight: 500 }}>by CodeWithBasharat</div>
         </Link>
-        <Link href="/login" className="text-sm font-semibold text-gray-600 hover:text-indigo-600 transition-colors">Already registered? Sign In →</Link>
+        <Link href="/login" style={{ fontSize: 13, fontWeight: 700, color: '#6b7280', textDecoration: 'none' }}>Already registered? Sign In →</Link>
       </nav>
 
-      <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-lg">
-          <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
-            <div className="h-1.5 bg-gray-100">
-              <div className="h-full bg-gradient-to-r from-indigo-600 to-purple-600 transition-all duration-500" style={{ width: step === 1 ? '50%' : '100%' }} />
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 5%' }}>
+        <div style={{ width: '100%', maxWidth: 480 }}>
+          <div style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 24, overflow: 'hidden', boxShadow: '0 25px 60px rgba(0,0,0,0.4)' }}>
+            {/* Progress bar */}
+            <div style={{ height: 4, background: '#1f2937' }}>
+              <div style={{ height: '100%', background: 'linear-gradient(90deg,#f59e0b,#d97706)', transition: 'width 0.5s', width: step === 1 ? '50%' : '100%' }} />
             </div>
-            <div className="p-8 md:p-10">
-              <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg shadow-indigo-200">
-                  <span className="text-3xl">{step === 1 ? '🍽️' : '🔐'}</span>
+            <div style={{ padding: '36px 32px' }}>
+              <div style={{ textAlign: 'center', marginBottom: 28 }}>
+                <div style={{ width: 60, height: 60, background: 'rgba(245,158,11,0.15)', border: '2px solid rgba(245,158,11,0.4)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', fontSize: 28 }}>
+                  {step === 1 ? '🍽️' : '🔐'}
                 </div>
-                <div className="flex items-center justify-center gap-2 mb-3">
-                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${step >= 1 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-500'}`}>1. Restaurant</span>
-                  <span className="text-gray-300">→</span>
-                  <span className={`text-xs font-bold px-3 py-1 rounded-full ${step >= 2 ? 'bg-indigo-600 text-white' : 'bg-gray-200 text-gray-500'}`}>2. Account</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
+                  {[['1. Restaurant', 1], ['2. Account', 2]].map(([label, s]) => (
+                    <span key={s as number} style={{ fontSize: 11, fontWeight: 800, padding: '4px 12px', borderRadius: 100, background: step >= (s as number) ? '#f59e0b' : 'rgba(255,255,255,0.05)', color: step >= (s as number) ? '#0a0f1e' : '#4b5563' }}>{label}</span>
+                  ))}
                 </div>
-                <h1 className="text-2xl font-black text-gray-900">{step === 1 ? 'Tell us about your restaurant' : 'Create your account'}</h1>
-                <p className="text-gray-500 mt-2 text-sm">
-                  {step === 1 ? "We'll set up a dedicated dashboard for your restaurant" : '7-day free trial starts immediately — no credit card needed'}
-                </p>
+                <h1 style={{ fontSize: 22, fontWeight: 900, color: '#f8fafc' }}>{step === 1 ? 'Tell us about your restaurant' : 'Create your account'}</h1>
+                <p style={{ color: '#6b7280', fontSize: 13, marginTop: 6 }}>{step === 1 ? "We'll set up a dedicated dashboard for your restaurant" : '7-day free trial starts immediately — no credit card needed'}</p>
               </div>
 
               {step === 1 && (
-                <form onSubmit={handleStep1} className="space-y-5">
+                <form onSubmit={handleStep1} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">🏪 Restaurant Name</label>
-                    <input type="text" value={restaurantName} onChange={(e) => setRestaurantName(e.target.value)} placeholder="e.g. Spice Garden Restaurant" className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 transition-colors text-gray-900 placeholder-gray-400" />
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#9ca3af', marginBottom: 8 }}>🏪 Restaurant Name</label>
+                    <input type="text" value={restaurantName} onChange={e => setRestaurantName(e.target.value)} placeholder="e.g. Spice Garden Restaurant" style={{ width: '100%', padding: '12px 14px', background: '#0f172a', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#f8fafc', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">👤 Your Name (Owner / Manager)</label>
-                    <input type="text" value={ownerName} onChange={(e) => setOwnerName(e.target.value)} placeholder="e.g. Mohammed Basharat" className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 transition-colors text-gray-900 placeholder-gray-400" />
+                    <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#9ca3af', marginBottom: 8 }}>👤 Your Name (Owner / Manager)</label>
+                    <input type="text" value={ownerName} onChange={e => setOwnerName(e.target.value)} placeholder="e.g. Mohammed Basharat" style={{ width: '100%', padding: '12px 14px', background: '#0f172a', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#f8fafc', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
                   </div>
-                  {error && <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">⚠️ {error}</div>}
-                  <button type="submit" className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold py-4 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all hover:scale-105 shadow-lg shadow-indigo-200 text-lg">Continue →</button>
+                  {error && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#f87171' }}>⚠️ {error}</div>}
+                  <button type="submit" style={{ padding: '14px', borderRadius: 12, background: 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#0a0f1e', fontWeight: 900, fontSize: 15, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>Continue →</button>
                 </form>
               )}
 
               {step === 2 && (
-                <form onSubmit={handleSignup} className="space-y-5">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">📧 Email Address</label>
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@restaurant.com" disabled={loading} className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 transition-colors text-gray-900 placeholder-gray-400 disabled:opacity-50" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">🔒 Password</label>
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Minimum 6 characters" disabled={loading} className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 transition-colors text-gray-900 placeholder-gray-400 disabled:opacity-50" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">🔒 Confirm Password</label>
-                    <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Re-enter your password" disabled={loading} className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 transition-colors text-gray-900 placeholder-gray-400 disabled:opacity-50" />
-                  </div>
-                  <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-center gap-3">
-                    <span className="text-2xl">🎁</span>
+                <form onSubmit={handleSignup} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                  {[['📧 Email Address', 'email', email, setEmail, 'you@restaurant.com'], ['🔒 Password', 'password', password, setPassword, 'Minimum 6 characters'], ['🔒 Confirm Password', 'password', confirmPassword, setConfirmPassword, 'Re-enter your password']].map(([label, type, val, setter, ph]) => (
+                    <div key={label as string}>
+                      <label style={{ display: 'block', fontSize: 12, fontWeight: 700, color: '#9ca3af', marginBottom: 8 }}>{label as string}</label>
+                      <input type={type as string} value={val as string} onChange={e => (setter as any)(e.target.value)} placeholder={ph as string} disabled={loading}
+                        style={{ width: '100%', padding: '12px 14px', background: '#0f172a', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 10, color: '#f8fafc', fontSize: 14, outline: 'none', boxSizing: 'border-box' }} />
+                    </div>
+                  ))}
+                  <div style={{ background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 10, padding: '12px 14px', display: 'flex', gap: 10, alignItems: 'center' }}>
+                    <span style={{ fontSize: 22 }}>🎁</span>
                     <div>
-                      <p className="text-green-800 font-bold text-sm">7-Day Free Trial Included!</p>
-                      <p className="text-green-600 text-xs mt-0.5">Full access, no credit card, cancel anytime.</p>
+                      <p style={{ fontSize: 13, fontWeight: 800, color: '#f59e0b' }}>7-Day Free Trial Included!</p>
+                      <p style={{ fontSize: 12, color: '#6b7280', marginTop: 2 }}>Full access, no credit card, cancel anytime.</p>
                     </div>
                   </div>
-                  {error && <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">⚠️ {error}</div>}
-                  <div className="flex gap-3">
-                    <button type="button" onClick={() => setStep(1)} disabled={loading} className="px-6 py-4 border-2 border-gray-200 text-gray-700 font-bold rounded-xl hover:border-indigo-300 transition-colors">← Back</button>
-                    <button type="submit" disabled={loading} className="flex-1 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold py-4 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all hover:scale-105 disabled:opacity-50 disabled:scale-100 shadow-lg shadow-indigo-200">
-                      {loading ? <span className="flex items-center justify-center gap-2"><span className="animate-spin w-5 h-5 border-2 border-white/30 border-t-white rounded-full" />Creating your restaurant...</span> : '🚀 Create Account & Start Trial'}
+                  {error && <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10, padding: '10px 14px', fontSize: 13, color: '#f87171' }}>⚠️ {error}</div>}
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button type="button" onClick={() => setStep(1)} disabled={loading} style={{ padding: '12px 20px', borderRadius: 10, border: '1.5px solid rgba(255,255,255,0.1)', background: 'transparent', color: '#9ca3af', fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'inherit' }}>← Back</button>
+                    <button type="submit" disabled={loading} style={{ flex: 1, padding: '12px', borderRadius: 10, background: loading ? 'rgba(245,158,11,0.4)' : 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#0a0f1e', fontWeight: 900, fontSize: 15, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit' }}>
+                      {loading ? 'Creating your restaurant...' : '🚀 Create Account & Start Trial'}
                     </button>
                   </div>
                 </form>
               )}
 
-              <div className="mt-6 pt-6 border-t border-gray-100 text-center">
-                <p className="text-gray-400 text-xs">By creating an account you agree to our Terms of Service and Privacy Policy.</p>
+              <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', marginTop: 20, paddingTop: 16, textAlign: 'center' }}>
+                <p style={{ color: '#4b5563', fontSize: 12 }}>By creating an account you agree to our Terms of Service.</p>
               </div>
             </div>
           </div>
-          <div className="flex items-center justify-center gap-8 mt-8 text-gray-400 text-xs">
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 32, marginTop: 20, color: '#374151', fontSize: 12 }}>
             <span>🔒 Secure & Encrypted</span><span>🛡️ Data Isolated</span><span>✅ No Hidden Fees</span>
           </div>
         </div>

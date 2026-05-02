@@ -17,6 +17,7 @@ import { formatCurrency, formatDate } from '@/lib/utils';
 import { Timestamp } from 'firebase/firestore';
 import { toast } from 'sonner';
 import { orderBy } from 'firebase/firestore';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 const categoryColors: Record<ExpenseCategory, string> = {
   rent: 'bg-blue-100 text-blue-800 border-blue-200',
@@ -36,6 +37,7 @@ export default function ExpensesPage() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [confirmState, setConfirmState] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
   const [formData, setFormData] = useState({
     title: '',
     amount: '',
@@ -141,8 +143,13 @@ export default function ExpensesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this expense?')) return;
+    setConfirmState({ open: true, id });
+  };
 
+  const confirmDelete = async () => {
+    const id = confirmState.id;
+    if (!id) return;
+    setConfirmState({ open: false, id: null });
     try {
       await deleteDocument(tenantId, 'expenses', id);
       toast.success('Expense deleted successfully');
@@ -157,7 +164,7 @@ export default function ExpensesPage() {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-amber-500 border-r-transparent"></div>
           <p className="mt-2 text-sm text-gray-600">Loading expenses...</p>
         </div>
       </div>
@@ -166,6 +173,16 @@ export default function ExpensesPage() {
 
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={confirmState.open}
+        title="Delete Expense?"
+        message="This expense record will be permanently deleted and cannot be recovered."
+        confirmLabel="Yes, Delete"
+        cancelLabel="Keep It"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmState({ open: false, id: null })}
+      />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Expense Management</h1>

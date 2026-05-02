@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 export default function CategoriesPage() {
   const { user } = useAuth();
@@ -21,6 +22,7 @@ export default function CategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<MenuCategory | null>(null);
+  const [confirmState, setConfirmState] = useState<{ open: boolean; category: MenuCategory | null }>({ open: false, category: null });
   const [formData, setFormData] = useState({ name: '', order: '0', isActive: true });
 
   useEffect(() => {
@@ -54,8 +56,13 @@ export default function CategoriesPage() {
   };
 
   const handleDelete = async (category: MenuCategory) => {
-    if (!confirm(`Are you sure you want to delete "${category.name}"?`)) return;
+    setConfirmState({ open: true, category });
+  };
 
+  const confirmDelete = async () => {
+    const category = confirmState.category;
+    if (!category) return;
+    setConfirmState({ open: false, category: null });
     try {
       await deleteDocument(tenantId, 'menuCategories', category.id);
       toast.success('Category deleted successfully');
@@ -92,7 +99,7 @@ export default function CategoriesPage() {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-amber-500 border-r-transparent"></div>
           <p className="mt-2 text-sm text-gray-600">Loading categories...</p>
         </div>
       </div>
@@ -101,6 +108,16 @@ export default function CategoriesPage() {
 
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={confirmState.open}
+        title={`Delete "${confirmState.category?.name}"?`}
+        message="This category will be permanently deleted. Menu items in this category will not be deleted but may become uncategorized."
+        confirmLabel="Yes, Delete"
+        cancelLabel="Keep Category"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmState({ open: false, category: null })}
+      />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Menu Categories</h1>

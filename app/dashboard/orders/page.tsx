@@ -65,7 +65,7 @@ export default function OrdersPage() {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-amber-500 border-r-transparent"></div>
           <p className="mt-2 text-sm text-gray-600">Loading orders...</p>
         </div>
       </div>
@@ -87,6 +87,16 @@ export default function OrdersPage() {
         </Button>
       </div>
 
+      {/* Tip: how to generate bill */}
+      {orders.some((o) => o.status === 'served' && o.paymentStatus === 'paid') && (
+        <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm">
+          <span className="text-lg">🧾</span>
+          <p className="text-amber-800">
+            <span className="font-bold">Ready to bill!</span> You have served &amp; paid orders.{' '}
+            <span className="font-medium">Click an order below to open it, then click "Generate Bill / Invoice".</span>
+          </p>
+        </div>
+      )}
       {/* Search */}
       <Input
         placeholder="Search by order number, customer name, or table..."

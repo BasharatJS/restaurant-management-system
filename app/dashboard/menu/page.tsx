@@ -11,6 +11,7 @@ import { MenuItemCard } from '@/components/menu/menu-item-card';
 import { AddMenuItemDialog } from '@/components/menu/add-menu-item-dialog';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 export default function MenuPage() {
   const { user } = useAuth();
@@ -23,6 +24,7 @@ export default function MenuPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
+  const [confirmState, setConfirmState] = useState<{ open: boolean; item: MenuItem | null }>({ open: false, item: null });
 
   useEffect(() => {
     // Redirect if not admin
@@ -58,10 +60,13 @@ export default function MenuPage() {
   };
 
   const handleDelete = async (item: MenuItem) => {
-    if (!confirm(`Are you sure you want to delete "${item.name}"?`)) {
-      return;
-    }
+    setConfirmState({ open: true, item });
+  };
 
+  const confirmDelete = async () => {
+    const item = confirmState.item;
+    if (!item) return;
+    setConfirmState({ open: false, item: null });
     try {
       await deleteDocument(tenantId, 'menuItems', item.id);
       toast.success('Menu item deleted successfully');
@@ -103,7 +108,7 @@ export default function MenuPage() {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-amber-500 border-r-transparent"></div>
           <p className="mt-2 text-sm text-gray-600">Loading menu...</p>
         </div>
       </div>
@@ -112,6 +117,16 @@ export default function MenuPage() {
 
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={confirmState.open}
+        title={`Delete "${confirmState.item?.name}"?`}
+        message="This menu item will be permanently removed. Any orders that already include it will not be affected."
+        confirmLabel="Yes, Delete"
+        cancelLabel="Keep Item"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmState({ open: false, item: null })}
+      />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Menu Management</h1>

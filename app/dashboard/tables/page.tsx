@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { TableCard } from '@/components/tables/table-card';
 import { toast } from 'sonner';
 import { TABLE_STATUS } from '@/lib/constants';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 export default function TablesPage() {
   const { user } = useAuth();
@@ -24,6 +25,7 @@ export default function TablesPage() {
   const [actionDialogOpen, setActionDialogOpen] = useState(false);
   const [editingTable, setEditingTable] = useState<Table | null>(null);
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
+  const [confirmState, setConfirmState] = useState<{ open: boolean; table: Table | null }>({ open: false, table: null });
   const [formData, setFormData] = useState({
     tableNumber: '',
     capacity: '',
@@ -61,8 +63,13 @@ export default function TablesPage() {
   };
 
   const handleDelete = async (table: Table) => {
-    if (!confirm(`Are you sure you want to delete Table ${table.tableNumber}?`)) return;
+    setConfirmState({ open: true, table });
+  };
 
+  const confirmDelete = async () => {
+    const table = confirmState.table;
+    if (!table) return;
+    setConfirmState({ open: false, table: null });
     try {
       await deleteDocument(tenantId, 'tables', table.id);
       toast.success('Table deleted successfully');
@@ -141,7 +148,7 @@ export default function TablesPage() {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-amber-500 border-r-transparent"></div>
           <p className="mt-2 text-sm text-gray-600">Loading tables...</p>
         </div>
       </div>
@@ -150,6 +157,16 @@ export default function TablesPage() {
 
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={confirmState.open}
+        title={`Delete Table ${confirmState.table?.tableNumber}?`}
+        message="This table will be permanently removed. Make sure there are no active orders on this table."
+        confirmLabel="Yes, Delete"
+        cancelLabel="Keep Table"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmState({ open: false, table: null })}
+      />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Table Management</h1>

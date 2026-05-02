@@ -13,6 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { Timestamp } from 'firebase/firestore';
 import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 export default function InventoryPage() {
   const { user } = useAuth();
@@ -22,6 +23,7 @@ export default function InventoryPage() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
+  const [confirmState, setConfirmState] = useState<{ open: boolean; item: InventoryItem | null }>({ open: false, item: null });
   const [formData, setFormData] = useState({
     name: '',
     unit: '',
@@ -71,12 +73,34 @@ export default function InventoryPage() {
     }
   };
 
+  const confirmDelete = async () => {
+    const item = confirmState.item;
+    if (!item) return;
+    setConfirmState({ open: false, item: null });
+    try {
+      await deleteDocument(tenantId, 'inventory', item.id);
+      toast.success('Item deleted');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to delete');
+    }
+  };
+
   const lowStockItems = items.filter((item) => item.currentStock <= item.minimumStock);
 
   if (loading) return <div className="flex items-center justify-center h-96"><p>Loading...</p></div>;
 
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={confirmState.open}
+        title={`Delete "${confirmState.item?.name}"?`}
+        message="This inventory item will be permanently deleted."
+        confirmLabel="Yes, Delete"
+        cancelLabel="Keep Item"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmState({ open: false, item: null })}
+      />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Inventory Management</h1>
@@ -111,7 +135,7 @@ export default function InventoryPage() {
               </div>
               <div className="flex gap-2 mt-3">
                 <Button size="sm" variant="outline" onClick={() => { setEditingItem(item); setFormData({ name: item.name, unit: item.unit, currentStock: item.currentStock.toString(), minimumStock: item.minimumStock.toString(), price: item.price.toString(), supplier: item.supplier }); setDialogOpen(true); }} className="flex-1">Edit</Button>
-                <Button size="sm" variant="outline" onClick={async () => { if (confirm('Delete?')) { await deleteDocument(tenantId, 'inventory', item.id); toast.success('Deleted'); } }} className="flex-1 text-red-600">Delete</Button>
+                <Button size="sm" variant="outline" onClick={() => setConfirmState({ open: true, item })} className="flex-1 text-red-600">Delete</Button>
               </div>
             </CardContent>
           </Card>

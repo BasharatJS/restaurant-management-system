@@ -35,83 +35,73 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 flex flex-col items-center justify-center px-6" style={{ fontFamily: "'Inter', sans-serif" }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg,#0a0f1e 0%,#111827 100%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px', fontFamily: "'Inter',sans-serif" }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');`}</style>
 
-      <div className="w-full max-w-md">
+      {/* Ambient glow */}
+      <div style={{ position: 'fixed', top: '20%', left: '50%', transform: 'translateX(-50%)', width: 500, height: 400, background: 'radial-gradient(circle,rgba(245,158,11,0.08) 0%,transparent 70%)', pointerEvents: 'none' }} />
+
+      <div style={{ width: '100%', maxWidth: 420 }}>
         {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center gap-2.5 mb-4">
-            <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
-              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M3 10h18M3 6h18M3 14h12M3 18h8" />
-              </svg>
+        <div style={{ textAlign: 'center', marginBottom: 36 }}>
+          <Link href="/" style={{ textDecoration: 'none', display: 'inline-block' }}>
+            <div style={{ fontSize: 28, fontWeight: 900, color: '#f8fafc', letterSpacing: '-1px' }}>
+              Table<span style={{ color: '#f59e0b' }}>Flow</span>
             </div>
-            <span className="text-2xl font-black text-gray-900">Table<span className="text-indigo-600">Flow</span></span>
+            <div style={{ fontSize: 11, color: '#4b5563', marginTop: 2 }}>by CodeWithBasharat</div>
           </Link>
-          <h1 className="text-2xl font-black text-gray-900">Sign in to your dashboard</h1>
-          <p className="text-gray-500 mt-2 text-sm">Welcome back! Enter your credentials below.</p>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#f8fafc', marginTop: 20 }}>Sign in to your dashboard</h1>
+          <p style={{ color: '#6b7280', fontSize: 14, marginTop: 6 }}>Welcome back! Enter your credentials below.</p>
         </div>
 
-        <div className="bg-white rounded-3xl shadow-2xl border border-gray-100 p-8">
-          <form onSubmit={handleSubmit} className="space-y-5">
+        <div style={{ background: '#111827', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: '36px 32px', boxShadow: '0 25px 60px rgba(0,0,0,0.4)' }}>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">📧 Email Address</label>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#9ca3af', marginBottom: 8 }}>Email Address</label>
               <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@restaurant.com"
-                disabled={loading}
-                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 transition-colors text-gray-900 placeholder-gray-400 disabled:opacity-50"
+                id="email" type="email" value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="you@restaurant.com" disabled={loading}
+                style={{ width: '100%', padding: '13px 16px', background: '#0f172a', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 12, color: '#f8fafc', fontSize: 14, outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s' }}
+                onFocus={e => (e.target.style.borderColor = '#f59e0b')}
+                onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
               />
             </div>
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">🔒 Password</label>
+              <label style={{ display: 'block', fontSize: 13, fontWeight: 700, color: '#9ca3af', marginBottom: 8 }}>Password</label>
               <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Your password"
-                disabled={loading}
-                className="w-full px-4 py-3.5 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 transition-colors text-gray-900 placeholder-gray-400 disabled:opacity-50"
+                id="password" type="password" value={password} onChange={e => setPassword(e.target.value)}
+                placeholder="Your password" disabled={loading}
+                style={{ width: '100%', padding: '13px 16px', background: '#0f172a', border: '1.5px solid rgba(255,255,255,0.1)', borderRadius: 12, color: '#f8fafc', fontSize: 14, outline: 'none', boxSizing: 'border-box', transition: 'border-color 0.2s' }}
+                onFocus={e => (e.target.style.borderColor = '#f59e0b')}
+                onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
               />
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 text-sm">
+              <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10, padding: '12px 14px', fontSize: 13, color: '#f87171' }}>
                 ⚠️ {error}
               </div>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold py-4 rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all hover:scale-105 disabled:opacity-50 disabled:scale-100 shadow-lg shadow-indigo-200 text-lg"
-            >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="animate-spin w-5 h-5 border-2 border-white/30 border-t-white rounded-full" />
-                  Signing in...
-                </span>
-              ) : 'Sign In →'}
+            <button type="submit" disabled={loading}
+              style={{ padding: '14px', borderRadius: 12, background: loading ? 'rgba(245,158,11,0.5)' : 'linear-gradient(135deg,#f59e0b,#d97706)', color: '#0a0f1e', fontWeight: 900, fontSize: 16, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'inherit', transition: 'all 0.2s', marginTop: 4 }}>
+              {loading ? 'Signing in...' : 'Sign In →'}
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-gray-100 text-center">
-            <p className="text-gray-500 text-sm">
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', marginTop: 24, paddingTop: 20, textAlign: 'center' }}>
+            <p style={{ color: '#6b7280', fontSize: 14 }}>
               Don't have an account?{' '}
-              <Link href="/signup" className="text-indigo-600 font-bold hover:text-indigo-700 transition-colors">
+              <Link href="/signup" style={{ color: '#f59e0b', fontWeight: 800, textDecoration: 'none' }}>
                 Start Free Trial →
               </Link>
             </p>
           </div>
         </div>
 
-        <p className="text-center text-gray-400 text-xs mt-6">
-          Restaurant Management, Reimagined · <Link href="/" className="hover:text-indigo-400 transition-colors">TableFlow</Link>
+        <p style={{ textAlign: 'center', color: '#374151', fontSize: 12, marginTop: 20 }}>
+          Restaurant Management, Reimagined ·{' '}
+          <Link href="/" style={{ color: '#f59e0b', textDecoration: 'none' }}>TableFlow</Link>
         </p>
       </div>
     </div>

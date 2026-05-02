@@ -14,6 +14,8 @@ import { Badge } from '@/components/ui/badge';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Timestamp } from 'firebase/firestore';
 import { toast } from 'sonner';
+import { StatsCard } from '@/components/dashboard/stats-card';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 export default function CustomersPage() {
   const { user } = useAuth();
@@ -24,6 +26,7 @@ export default function CustomersPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<Customer | null>(null);
+  const [confirmState, setConfirmState] = useState<{ open: boolean; customer: Customer | null }>({ open: false, customer: null });
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
@@ -98,8 +101,13 @@ export default function CustomersPage() {
   };
 
   const handleDelete = async (customer: Customer) => {
-    if (!confirm(`Are you sure you want to delete ${customer.name}?`)) return;
+    setConfirmState({ open: true, customer });
+  };
 
+  const confirmDelete = async () => {
+    const customer = confirmState.customer;
+    if (!customer) return;
+    setConfirmState({ open: false, customer: null });
     try {
       await deleteDocument(tenantId, 'customers', customer.id);
       toast.success('Customer deleted successfully');
@@ -118,7 +126,7 @@ export default function CustomersPage() {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-amber-500 border-r-transparent"></div>
           <p className="mt-2 text-sm text-gray-600">Loading customers...</p>
         </div>
       </div>
@@ -127,6 +135,16 @@ export default function CustomersPage() {
 
   return (
     <div className="space-y-6">
+      <ConfirmDialog
+        open={confirmState.open}
+        title={`Delete ${confirmState.customer?.name}?`}
+        message={`This will permanently remove ${confirmState.customer?.name} from your customer database.`}
+        confirmLabel="Yes, Delete"
+        cancelLabel="Keep Customer"
+        variant="danger"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmState({ open: false, customer: null })}
+      />
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Customer Management</h1>
@@ -144,38 +162,40 @@ export default function CustomersPage() {
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Total Customers</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{customers.length}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Total Revenue</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">
-              {formatCurrency(customers.reduce((sum, c) => sum + c.totalSpent, 0))}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm">Avg Order Value</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">
-              {formatCurrency(
-                customers.length > 0
-                  ? customers.reduce((sum, c) => sum + c.totalSpent, 0) / customers.length
-                  : 0
-              )}
-            </p>
-          </CardContent>
-        </Card>
+        <StatsCard
+          title="Total Customers"
+          value={customers.length}
+          accentColor="blue"
+          icon={
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          }
+        />
+        <StatsCard
+          title="Total Revenue from Customers"
+          value={formatCurrency(customers.reduce((sum, c) => sum + c.totalSpent, 0))}
+          accentColor="green"
+          icon={
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          }
+        />
+        <StatsCard
+          title="Avg Order Value"
+          value={formatCurrency(
+            customers.length > 0
+              ? customers.reduce((sum, c) => sum + c.totalSpent, 0) / customers.length
+              : 0
+          )}
+          accentColor="amber"
+          icon={
+            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+          }
+        />
       </div>
 
       {/* Search */}

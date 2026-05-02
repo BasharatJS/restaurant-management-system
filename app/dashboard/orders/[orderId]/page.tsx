@@ -119,7 +119,7 @@ export default function OrderDetailsPage() {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+          <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-amber-500 border-r-transparent"></div>
           <p className="mt-2 text-sm text-gray-600">Loading order...</p>
         </div>
       </div>
@@ -376,17 +376,20 @@ export default function OrderDetailsPage() {
                 </div>
 
                 {order.paymentStatus === 'paid' &&
-                  order.status === 'served' && (
-                    <Button
-                      className="w-full"
-                      onClick={() =>
-                        router.push(
-                          `/dashboard/billing/generate?orderId=${orderId}`
-                        )
-                      }
-                    >
-                      Generate Bill
-                    </Button>
+                  (order.status === 'served' || order.status === 'completed') && (
+                    <div className="pt-2 border-t">
+                      <p className="text-xs text-gray-500 mb-2">✅ Payment confirmed — ready to invoice</p>
+                      <Button
+                        className="w-full bg-gray-900 hover:bg-gray-800 text-white font-bold"
+                        onClick={() =>
+                          router.push(
+                            `/dashboard/billing/generate?orderId=${orderId}`
+                          )
+                        }
+                      >
+                        🧾 Generate Bill / Invoice
+                      </Button>
+                    </div>
                   )}
               </CardContent>
             </Card>
